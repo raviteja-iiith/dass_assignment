@@ -1,0 +1,247 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Green gradient background effect */
+body {
+  background: linear-gradient(180deg, #0a0e0a 0%, #0f1910 50%, #1a2820 100%);
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  background: radial-gradient(ellipse at bottom, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 60vh;
+  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); }
+}
+
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Green glow effect for cards */
+.card {
+  position: relative;
+  z-index: 1;
+  background: rgba(15, 25, 16, 0.9) !important;
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  backdrop-filter: blur(10px);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), transparent, rgba(16, 185, 129, 0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(34, 197, 94, 0.2);
+}
+
+/* Custom scrollbar for green theme */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 25, 16, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.6), rgba(16, 185, 129, 0.6));
+  border-radius: 10px;
+  border: 2px solid rgba(15, 25, 16, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.8), rgba(16, 185, 129, 0.8));
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Button glow effects */
+.btn-primary {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.9)) !important;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Navbar enhancement */
+.navbar {
+  background: rgba(10, 14, 10, 0.95) !important;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* Input focus glow */
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1), 0 0 20px rgba(34, 197, 94, 0.2);
+  outline: none;
+}
+
+/* Stats cards glow */
+.stats {
+  background: rgba(15, 25, 16, 0.8) !important;
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  position: relative;
+}
+
+.stats::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05);
+  pointer-events: none;
+}
+
+/* Badge glow */
+.badge-primary,
+.badge-success {
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+/* Alert glow */
+.alert-success {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Shimmer effect for loading */
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Container with relative positioning for z-index */
+.container,
+[class*="max-w-"] {
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhance text readability on dark green background */
+h1, h2, h3, h4, h5, h6 {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+

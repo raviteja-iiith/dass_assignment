@@ -4,7 +4,9 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
+      required: function() {
+        return this.role === "participant";
+      }
     },
     lastName: {
       type: String,
