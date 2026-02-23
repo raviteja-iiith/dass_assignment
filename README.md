@@ -52,15 +52,13 @@ A comprehensive full-stack event management platform built with React, Node.js, 
 ## Advanced Features Implemented
 
 As per the assignment requirements, features were selected from three tiers:
-- **Tier A**: Implement 2 features worth 8 marks each
-- **Tier B**: Implement 2 features worth 6 marks each  
-- **Tier C**: Implement 1 feature worth 2 marks
-
-**Total Implementation: 30 marks (16 + 12 + 2)**
+- **Tier A**: Implement 2 features
+- **Tier B**: Implement 2 features  
+- **Tier C**: Implement 1 feature
 
 ---
 
-### Tier A Features (16 total)
+### Tier A Features
 
 #### Feature 1: Merchandise Payment Workflow
 
@@ -114,7 +112,7 @@ Having attended several college events, I've seen how manual attendance takes fo
 
 ---
 
-### Tier B Features (12 total)
+### Tier B Features
 
 #### Feature 3: Real-Time Discussion Forum
 
@@ -180,7 +178,7 @@ In any production system, users forget passwords. Without a self-service reset m
 
 ---
 
-### Tier C Feature (2 total)
+### Tier C Feature
 
 #### Feature 5: Anonymous Feedback System
 
@@ -212,7 +210,7 @@ Honest feedback is crucial for improving events, but people often hesitate to pr
 
 ---
 
-## 📦 Setup and Installation
+## Setup and Installation
 
 ### Prerequisites
 
@@ -380,94 +378,8 @@ Access to XMLHttpRequest blocked by CORS policy
 
 ---
 
-## 📁 Project Structure
 
-```
-felicity/
-├── backend/
-│   ├── server.js                    # Express app entry point
-│   ├── package.json                 # Backend dependencies
-│   ├── .env                         # Environment variables (not in git)
-│   ├── uploads/                     # Uploaded files (payment proofs)
-│   │   └── payment-proofs/
-│   └── src/
-│       ├── config/
-│       │   └── db.js                # MongoDB connection
-│       ├── middleware/
-│       │   ├── auth.js              # JWT authentication
-│       │   ├── role.js              # Role-based authorization
-│       │   └── upload.js            # Multer file upload config
-│       ├── models/
-│       │   ├── users.js             # User schema (Admin/Organizer/Participant)
-│       │   ├── Event.js             # Event schema
-│       │   ├── Registration.js      # Event/Merchandise registration
-│       │   ├── Feedback.js          # Anonymous feedback
-│       │   ├── ForumMessage.js      # Discussion forum messages
-│       │   └── PasswordResetRequest.js  # OTP storage
-│       ├── routes/
-│       │   ├── auth.js              # Login, register, password reset
-│       │   ├── admin.routes.js      # Admin operations
-│       │   ├── organizer.routes.js  # Event management, attendance
-│       │   ├── participant.routes.js # Registration, dashboard
-│       │   ├── event.routes.js      # Public event listing
-│       │   ├── forum.routes.js      # Discussion forum
-│       │   └── feedback.routes.js   # Feedback submission/viewing
-│       └── utils/
-│           ├── emailService.js      # Nodemailer configuration
-│           ├── qrService.js         # QR code generation
-│           └── discordService.js    # Discord webhook notifications
-│
-├── frontend/
-│   ├── index.html                   # HTML entry point
-│   ├── package.json                 # Frontend dependencies
-│   ├── vite.config.js               # Vite configuration
-│   ├── tailwind.config.js           # Tailwind CSS customization
-│   ├── .env                         # Frontend environment variables
-│   └── src/
-│       ├── main.jsx                 # React entry point
-│       ├── App.jsx                  # Root component with routing
-│       ├── index.css                # Global Tailwind imports
-│       ├── components/
-│       │   ├── Navbar.jsx           # Navigation bar
-│       │   ├── ProtectedRoute.jsx   # Route authorization wrapper
-│       │   ├── EventCard.jsx        # Event display component
-│       │   ├── TicketCard.jsx       # Registration ticket with QR
-│       │   ├── FeedbackModal.jsx    # Feedback submission form
-│       │   └── ForumDiscussion.jsx  # Discussion + moderation tabs
-│       ├── context/
-│       │   └── AuthContext.jsx      # Global authentication state
-│       ├── pages/
-│       │   ├── Login.jsx
-│       │   ├── Register.jsx
-│       │   ├── Dashboard.jsx        # Role-based dashboard router
-│       │   ├── BrowseEvents.jsx     # Public event listing
-│       │   ├── EventDetails.jsx     # Event page with forum tabs
-│       │   ├── Profile.jsx
-│       │   ├── admin/
-│       │   │   ├── Dashboard.jsx
-│       │   │   └── PasswordResetManagement.jsx
-│       │   ├── organizer/
-│       │   │   ├── Dashboard.jsx
-│       │   │   ├── CreateEvent.jsx
-│       │   │   ├── EditEvent.jsx
-│       │   │   ├── EventAnalytics.jsx
-│       │   │   ├── AttendanceScanner.jsx
-│       │   │   ├── MerchandiseOrders.jsx
-│       │   │   ├── EventFeedback.jsx
-│       │   │   └── PasswordResetHistory.jsx
-│       │   └── participant/
-│       │       └── Dashboard.jsx
-│       └── services/
-│           └── api.js               # Axios instance with interceptors
-│
-├── TESTING_GUIDE.md                 # Comprehensive testing instructions
-├── README.md                        # This file
-└── .gitignore
-```
-
----
-
-## 📡 API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 
@@ -529,19 +441,19 @@ felicity/
 
 ---
 
-## 🧪 Testing Guide
+## Testing Guide
 
 For comprehensive testing instructions covering all features, see [TESTING_GUIDE.md](TESTING_GUIDE.md).
 
 **Quick Test Checklist:**
-- ✅ User authentication (Login/Register/Password Reset)
-- ✅ Event creation and management
-- ✅ Merchandise registration with payment proof upload
-- ✅ Payment approval workflow
-- ✅ QR code generation and scanning
-- ✅ Forum discussion with notifications
-- ✅ Anonymous feedback submission
-- ✅ Role-based access control
+- User authentication (Login/Register/Password Reset)
+- Event creation and management
+- Merchandise registration with payment proof upload
+- Payment approval workflow
+- QR code generation and scanning
+- Forum discussion with notifications
+- Anonymous feedback submission
+- Role-based access control
 
 **Test Accounts:**
 - **Admin:** admin@felicity.com / admin123
@@ -549,7 +461,7 @@ For comprehensive testing instructions covering all features, see [TESTING_GUIDE
 
 ---
 
-## 🎯 Key Design Decisions Summary
+## Key Design Decisions Summary
 
 1. **JWT over Sessions:** Stateless authentication enables horizontal scaling and mobile app integration
 2. **Tailwind + DaisyUI:** Utility-first CSS with pre-built components balances flexibility and speed
@@ -562,13 +474,13 @@ For comprehensive testing instructions covering all features, see [TESTING_GUIDE
 
 ---
 
-## 📄 License
+## License
 
 This project is developed as part of an academic assignment for educational purposes.
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 - **Developer:** [Your Name]
 - **Course:** DASS Assignment
@@ -577,7 +489,7 @@ This project is developed as part of an academic assignment for educational purp
 
 ---
 
-## 📞 Support
+## Support
 
 For issues or questions:
 1. Check [TESTING_GUIDE.md](TESTING_GUIDE.md) for feature testing instructions
@@ -587,4 +499,4 @@ For issues or questions:
 
 ---
 
-**Built with ❤️ using React, Node.js, Express, MongoDB, and Tailwind CSS**
+**Built using React, Node.js, Express, MongoDB, and Tailwind CSS**
