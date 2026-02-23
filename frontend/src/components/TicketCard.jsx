@@ -1,4 +1,9 @@
+import { useState } from "react";
+import FeedbackModal from "./FeedbackModal";
+
 function TicketCard({ registration }) {
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
   const formatDate = (date) => new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -27,13 +32,42 @@ function TicketCard({ registration }) {
     return colors[status] || "badge-ghost";
   };
 
+  const getApprovalStatusColor = (status) => {
+    const colors = {
+      approved: "badge-success",
+      pending: "badge-warning",
+      rejected: "badge-error"
+    };
+    return colors[status] || "badge-ghost";
+  };
+
   return (
     <div className="card bg-base-100 shadow-xl border border-base-300 hover:shadow-2xl transition-all duration-300">
       <div className="card-body">
         <div className="flex justify-between items-start">
-          <div>
+          <div className="flex-1">
             <h3 className="card-title text-lg">{registration.eventId?.eventName}</h3>
-            <p className="text-sm opacity-60">Ticket ID: {registration.ticketId}</p>
+            <p className="text-xs opacity-60 mt-1">
+              <span className="badge badge-sm badge-outline mr-2">
+                {registration.registrationType || registration.eventId?.eventType}
+              </span>
+              by {registration.eventId?.organizerId?.organizerName || "Unknown Organizer"}
+            </p>
+            <button 
+              className="text-sm font-mono text-primary hover:underline mt-1 cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(registration.ticketId);
+                alert("Ticket ID copied to clipboard!");
+              }}
+              title="Click to copy Ticket ID"
+            >
+              🎫 {registration.ticketId}
+            </button>
+            {registration.teamName && (
+              <p className="text-xs opacity-70 mt-1">
+                Team: <span className="font-semibold">{registration.teamName}</span>
+              </p>
+            )}
           </div>
           <div className={`badge ${getStatusColor(registration.registrationStatus)}`}>
             {registration.registrationStatus}
@@ -69,8 +103,17 @@ function TicketCard({ registration }) {
               className="btn btn-primary btn-sm w-full"
               onClick={() => document.getElementById(`qr-modal-${registration._id}`).showModal()}
             >
-              Show QR Code
+              🎫 Show QR Code
             </button>
+          </div>
+        )}
+
+        {!registration.qrCode && (
+          <div className="alert alert-warning mt-2 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>QR code not available</span>
           </div>
         )}
 
@@ -82,7 +125,31 @@ function TicketCard({ registration }) {
             <span>Attendance Marked</span>
           </div>
         )}
+
+        {/* Feedback Button for registered participants */}
+        {registration.registrationStatus === "registered" && (
+          <div className="mt-4">
+            <button
+              className="btn btn-outline btn-sm w-full"
+              onClick={() => setShowFeedbackModal(true)}
+            >
+              ⭐ Give Feedback
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <FeedbackModal
+          eventId={registration.eventId?._id}
+          eventName={registration.eventId?.eventName}
+          onClose={() => setShowFeedbackModal(false)}
+          onSuccess={() => {
+            // Optionally refresh the dashboard or show a success message
+          }}
+        />
+      )}
 
       {/* QR Code Modal */}
       <dialog id={`qr-modal-${registration._id}`} className="modal">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../../services/api";
 
 function AdminDashboard() {
@@ -85,14 +86,19 @@ function AdminDashboard() {
           <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-lg opacity-70">System Management & Analytics</p>
         </div>
-        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
-          {showCreateForm ? "Cancel" : "+ Create Organizer"}
-        </button>
+        <div className="flex gap-2">
+          <Link to="/admin/password-resets" className="btn btn-secondary">
+            🔑 Password Reset Requests
+          </Link>
+          <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
+            {showCreateForm ? "Cancel" : "+ Create Organizer"}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="stats shadow border border-base-300">
+        <div className="stats shadow border border-base-300 hover:shadow-2xl hover:shadow-success/50 hover:border-success transition-all duration-300 cursor-pointer">
           <div className="stat">
             <div className="stat-figure text-primary">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-8 h-8 stroke-current">
@@ -104,7 +110,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        <div className="stats shadow border border-base-300">
+        <div className="stats shadow border border-base-300 hover:shadow-2xl hover:shadow-success/50 hover:border-success transition-all duration-300 cursor-pointer">
           <div className="stat">
             <div className="stat-figure text-success">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-8 h-8 stroke-current">
@@ -116,7 +122,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        <div className="stats shadow border border-base-300">
+        <div className="stats shadow border border-base-300 hover:shadow-2xl hover:shadow-success/50 hover:border-success transition-all duration-300 cursor-pointer">
           <div className="stat">
             <div className="stat-figure text-secondary">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-8 h-8 stroke-current">
@@ -128,7 +134,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        <div className="stats shadow border border-base-300">
+        <div className="stats shadow border border-base-300 hover:shadow-2xl hover:shadow-success/50 hover:border-success transition-all duration-300 cursor-pointer">
           <div className="stat">
             <div className="stat-figure text-warning">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-8 h-8 stroke-current">

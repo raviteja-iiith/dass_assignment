@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const connectDB = require("./src/config/db");
@@ -11,6 +12,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (payment proofs)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Root route
 app.get("/", (req, res) => {
@@ -64,6 +68,12 @@ app.use("/events", eventRoutes);
 
 const participantRoutes = require("./src/routes/participant.routes");
 app.use("/participant", participantRoutes);
+
+const forumRoutes = require("./src/routes/forum.routes");
+app.use("/events", forumRoutes);
+
+const feedbackRoutes = require("./src/routes/feedback.routes");
+app.use("/events", feedbackRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

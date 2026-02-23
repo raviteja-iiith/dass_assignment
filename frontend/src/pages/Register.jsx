@@ -215,6 +215,7 @@ function Register() {
               <div className="form-control">
                 <label className="label">
                   <span className="label-text font-semibold">Areas of Interest</span>
+                  <span className="label-text-alt opacity-60">Optional - can be set later in Profile</span>
                 </label>
                 <div className="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg">
                   {interestOptions.map(interest => (
@@ -232,6 +233,11 @@ function Register() {
                     </button>
                   ))}
                 </div>
+                <label className="label">
+                  <span className="label-text-alt text-info">
+                    💡 Select interests to get personalized event recommendations
+                  </span>
+                </label>
               </div>
 
               <button

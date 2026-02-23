@@ -4,11 +4,11 @@ const customFormFieldSchema = new mongoose.Schema({
   fieldName: { type: String, required: true },
   fieldType: { 
     type: String, 
-    enum: ["text", "email", "number", "dropdown", "checkbox", "file", "textarea"],
+    enum: ["text", "email", "number", "dropdown", "textarea"],
     required: true 
   },
   required: { type: Boolean, default: false },
-  options: [String], // For dropdown/checkbox
+  options: [String], // For dropdown
   order: { type: Number, default: 0 }
 });
 

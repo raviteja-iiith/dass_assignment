@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema(
     category: String,
     description: String,
     contactEmail: String,
+    contactNumber: String,
     discordWebhook: String,
     isApproved: {
       type: Boolean,

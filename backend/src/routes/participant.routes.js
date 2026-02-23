@@ -100,8 +100,67 @@ router.put(
   }
 );
 
-// Follow/unfollow organizer
+// Change password
+router.put(
+  "/change-password",
+  authMiddleware,
+  allowRoles("participant"),
+  async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current password and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters long" });
+      }
+
+      const participant = await User.findById(req.user._id || req.user.id);
+      
+      // Verify current password
+      const isMatch = await participant.comparePassword(currentPassword);
+      if (!isMatch) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+
+      // Update to new password
+      participant.password = newPassword;
+      await participant.save();
+      
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Follow organizer
 router.post(
+  "/follow/:organizerId",
+  authMiddleware,
+  allowRoles("participant"),
+  async (req, res) => {
+    try {
+      const participant = await User.findById(req.user._id || req.user.id);
+      const organizerId = req.params.organizerId;
+
+      if (!participant.followedOrganizers.includes(organizerId)) {
+        participant.followedOrganizers.push(organizerId);
+        await participant.save();
+        res.json({ message: "Followed successfully" });
+      } else {
+        res.status(400).json({ error: "Already following this organizer" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Unfollow organizer
+router.delete(
   "/follow/:organizerId",
   authMiddleware,
   allowRoles("participant"),
@@ -113,15 +172,11 @@ router.post(
       const index = participant.followedOrganizers.indexOf(organizerId);
       
       if (index > -1) {
-        // Unfollow
         participant.followedOrganizers.splice(index, 1);
         await participant.save();
         res.json({ message: "Unfollowed successfully" });
       } else {
-        // Follow
-        participant.followedOrganizers.push(organizerId);
-        await participant.save();
-        res.json({ message: "Followed successfully" });
+        res.status(400).json({ error: "Not following this organizer" });
       }
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -136,12 +191,45 @@ router.get(
   allowRoles("participant"),
   async (req, res) => {
     try {
-      const organizers = await User.find({
+      const { search, category } = req.query;
+      
+      let query = {
         role: "organizer",
         isApproved: true
-      }).select("organizerName category description contactEmail");
+      };
+      
+      // Add search filter
+      if (search) {
+        query.$or = [
+          { organizerName: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } }
+        ];
+      }
+      
+      // Add category filter
+      if (category) {
+        query.category = category;
+      }
 
-      res.json(organizers);
+      const organizers = await User.find(query)
+        .select("organizerName category description contactEmail discordWebhook");
+
+      // Add event count for each organizer
+      const organizersWithCounts = await Promise.all(
+        organizers.map(async (organizer) => {
+          const eventCount = await Event.countDocuments({ 
+            organizerId: organizer._id,
+            status: { $in: ["published", "ongoing", "completed"] }
+          });
+          
+          return {
+            ...organizer.toObject(),
+            eventCount
+          };
+        })
+      );
+
+      res.json(organizersWithCounts);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

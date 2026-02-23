@@ -6,6 +6,7 @@ const User = require("../models/users");
 
 const authMiddleware = require("../middleware/auth");
 const allowRoles = require("../middleware/role");
+const upload = require("../middleware/upload");
 const { generateQRCode, generateTicketId } = require("../utils/qrService");
 const { sendTicketEmail } = require("../utils/emailService");
 const { postEventToDiscord } = require("../utils/discordService");
@@ -400,7 +401,8 @@ router.post(
         registrationType: "normal",
         formResponses: req.body.formResponses || {},
         paymentAmount: event.registrationFee,
-        paymentStatus: event.registrationFee > 0 ? "pending" : "completed",
+        paymentStatus: "completed", // Normal events auto-approve (no payment approval workflow)
+        registrationStatus: "registered",
         qrCode
       });
 
@@ -442,6 +444,7 @@ router.post(
   "/:eventId/purchase",
   authMiddleware,
   allowRoles("participant"),
+  upload.single("paymentProof"),
   async (req, res) => {
     try {
       const event = await Event.findById(req.params.eventId);
@@ -454,9 +457,14 @@ router.post(
         return res.status(400).json({ error: "Event not open for purchase" });
       }
 
+      if (new Date() > new Date(event.registrationDeadline)) {
+        return res.status(400).json({ error: "Purchase deadline passed" });
+      }
+
       const { variantIndex, quantity } = req.body;
       const variant = event.merchandiseDetails.variants[variantIndex];
 
+      // Check stock availability (blocking requirement)
       if (!variant || variant.stockQuantity < quantity) {
         return res.status(400).json({ error: "Insufficient stock" });
       }
@@ -473,23 +481,17 @@ router.post(
         return res.status(400).json({ error: "Purchase limit reached" });
       }
 
-      // Generate ticket
+      // Validate payment proof upload
+      if (!req.file) {
+        return res.status(400).json({ error: "Payment proof is required" });
+      }
+
+      // Generate ticket ID and QR code (requirement: ticket with QR is generated)
       const ticketId = generateTicketId();
       const totalPrice = event.registrationFee * quantity;
-      const qrData = {
-        ticketId,
-        eventId: event._id,
-        participantId: participant._id,
-        merchandise: {
-          item: event.merchandiseDetails.itemName,
-          variant: { size: variant.size, color: variant.color },
-          quantity
-        },
-        timestamp: new Date().toISOString()
-      };
-      const qrCode = await generateQRCode(qrData);
 
-      // Create registration
+      // Create registration with PENDING approval status
+      // QR code, stock decrement, and email will be processed upon organizer approval
       const registration = new Registration({
         ticketId,
         eventId: event._id,
@@ -505,29 +507,15 @@ router.post(
         },
         paymentAmount: totalPrice,
         paymentStatus: "pending",
-        qrCode
+        paymentProof: `/uploads/payment-proofs/${req.file.filename}`,
+        paymentApprovalStatus: "pending", // Awaiting organizer approval
+        qrCode: null // Will be generated upon approval
       });
 
       await registration.save();
 
-      // Update stock and event stats
-      variant.sold += quantity;
-      variant.stockQuantity -= quantity;
-      event.totalRegistrations += 1;
-      event.totalRevenue += totalPrice;
-      await event.save();
-
-      // Send email
-      await sendTicketEmail(participant.email, `${participant.firstName} ${participant.lastName || ""}`, {
-        ticketId,
-        eventName: event.merchandiseDetails.itemName,
-        eventDate: event.eventStartDate,
-        amount: totalPrice,
-        qrCode
-      });
-
       res.json({
-        message: "Purchase successful",
+        message: "Payment proof uploaded successfully! Your order is pending organizer approval.",
         ticketId,
         registration
       });

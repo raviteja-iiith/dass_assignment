@@ -6,13 +6,21 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ParticipantDashboard from "./pages/participant/Dashboard";
 import BrowseEvents from "./pages/BrowseEvents";
+import Organizers from "./pages/Organizers";
+import OrganizerDetail from "./pages/OrganizerDetail";
 import EventDetails from "./pages/EventDetails";
 import Profile from "./pages/Profile";
 import OrganizerDashboard from "./pages/organizer/Dashboard";
 import CreateEvent from "./pages/organizer/CreateEvent";
 import EditEvent from "./pages/organizer/EditEvent";
 import EventAnalytics from "./pages/organizer/EventAnalytics";
+import OngoingEvents from "./pages/organizer/OngoingEvents";
+import MerchandiseOrders from "./pages/organizer/MerchandiseOrders";
+import AttendanceScanner from "./pages/organizer/AttendanceScanner";
+import PasswordResetHistory from "./pages/organizer/PasswordResetHistory";
+import EventFeedback from "./pages/organizer/EventFeedback";
 import AdminDashboard from "./pages/admin/Dashboard";
+import PasswordResetManagement from "./pages/admin/PasswordResetManagement";
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -35,17 +43,25 @@ function AppContent() {
         {/* Participant Routes */}
         <Route path="/participant" element={<ProtectedRoute role="participant"><ParticipantDashboard /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><BrowseEvents /></ProtectedRoute>} />
+        <Route path="/organizers" element={<ProtectedRoute role="participant"><Organizers /></ProtectedRoute>} />
+        <Route path="/organizers/:id" element={<ProtectedRoute role="participant"><OrganizerDetail /></ProtectedRoute>} />
         <Route path="/events/:id" element={<ProtectedRoute><EventDetails /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         
         {/* Organizer Routes */}
         <Route path="/organizer" element={<ProtectedRoute role="organizer"><OrganizerDashboard /></ProtectedRoute>} />
         <Route path="/organizer/create-event" element={<ProtectedRoute role="organizer"><CreateEvent /></ProtectedRoute>} />
+        <Route path="/organizer/ongoing-events" element={<ProtectedRoute role="organizer"><OngoingEvents /></ProtectedRoute>} />
         <Route path="/organizer/events/:id/edit" element={<ProtectedRoute role="organizer"><EditEvent /></ProtectedRoute>} />
         <Route path="/organizer/events/:id/analytics" element={<ProtectedRoute role="organizer"><EventAnalytics /></ProtectedRoute>} />
+        <Route path="/organizer/merchandise-orders" element={<ProtectedRoute role="organizer"><MerchandiseOrders /></ProtectedRoute>} />
+        <Route path="/organizer/events/:eventId/attendance" element={<ProtectedRoute role="organizer"><AttendanceScanner /></ProtectedRoute>} />
+        <Route path="/organizer/events/:eventId/feedback" element={<ProtectedRoute role="organizer"><EventFeedback /></ProtectedRoute>} />
+        <Route path="/organizer/password-reset" element={<ProtectedRoute role="organizer"><PasswordResetHistory /></ProtectedRoute>} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/password-resets" element={<ProtectedRoute role="admin"><PasswordResetManagement /></ProtectedRoute>} />
         
         <Route path="/" element={<Navigate to={user ? `/${user.role}` : "/login"} />} />
       </Routes>

@@ -47,6 +47,15 @@ const registrationSchema = new mongoose.Schema({
   paymentAmount: Number,
   paymentDate: Date,
   
+  // Payment proof (for merchandise)
+  paymentProof: String, // File path/URL to uploaded payment proof
+  paymentApprovalStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+  },
+  paymentRejectionReason: String,
+  
   // Status tracking
   registrationStatus: {
     type: String,
@@ -60,6 +69,21 @@ const registrationSchema = new mongoose.Schema({
     default: false
   },
   attendanceMarkedAt: Date,
+  
+  // Attendance audit log
+  attendanceLog: [{
+    timestamp: { type: Date, default: Date.now },
+    scannedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    type: { type: String, enum: ["scan", "manual"], default: "scan" },
+    notes: String
+  }],
+  
+  // Manual override
+  manualOverride: {
+    type: Boolean,
+    default: false
+  },
+  overrideReason: String,
   
   // QR Code
   qrCode: String, // Base64 or URL

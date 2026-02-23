@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/users");
+const PasswordResetRequest = require("../models/PasswordResetRequest");
 const authMiddleware = require("../middleware/auth");
 const allowRoles = require("../middleware/role");
 const { sendOrganizerCredentials } = require("../utils/emailService");
@@ -147,10 +148,10 @@ router.get(
   allowRoles("admin"),
   async (req, res) => {
     try {
-      const requests = await User.find({
-        role: "organizer",
-        passwordResetRequested: true
-      }).select("organizerName email contactEmail createdAt");
+      const requests = await PasswordResetRequest.find()
+        .populate("organizerId", "organizerName email contactEmail category")
+        .populate("processedBy", "firstName lastName email")
+        .sort({ createdAt: -1 });
 
       res.json(requests);
     } catch (error) {
@@ -159,7 +160,119 @@ router.get(
   }
 );
 
-// Reset organizer password
+// Approve password reset request
+router.put(
+  "/password-reset-requests/:requestId/approve",
+  authMiddleware,
+  allowRoles("admin"),
+  async (req, res) => {
+    try {
+      const { adminComment } = req.body;
+      const request = await PasswordResetRequest.findById(req.params.requestId)
+        .populate("organizerId", "email contactEmail organizerName");
+
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+
+      if (request.status !== "pending") {
+        return res.status(400).json({ error: "Request already processed" });
+      }
+
+      // Generate new password
+      const newPassword = Math.random().toString(36).slice(-8) + "Aa1!";
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+      // Update organizer's password
+      const organizer = await User.findById(request.organizerId._id);
+      organizer.password = hashedPassword;
+      organizer.passwordResetRequested = false;
+      await organizer.save();
+
+      // Update request
+      request.status = "approved";
+      request.adminComment = adminComment || "Request approved";
+      request.newPassword = newPassword; // Store temporarily for admin
+      request.newPasswordHashed = hashedPassword;
+      request.processedBy = req.user._id || req.user.id;
+      request.processedAt = new Date();
+      await request.save();
+
+      // Send new credentials
+      await sendOrganizerCredentials(
+        request.organizerId.contactEmail,
+        request.organizerId.organizerName,
+        {
+          email: request.organizerId.email,
+          password: newPassword
+        }
+      );
+
+      res.json({
+        message: "Password reset approved successfully",
+        newPassword, // Return for admin to share if email fails
+        request
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Reject password reset request
+router.put(
+  "/password-reset-requests/:requestId/reject",
+  authMiddleware,
+  allowRoles("admin"),
+  async (req, res) => {
+    try {
+      const { adminComment } = req.body;
+      const request = await PasswordResetRequest.findById(req.params.requestId);
+
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+
+      if (request.status !== "pending") {
+        return res.status(400).json({ error: "Request already processed" });
+      }
+
+      request.status = "rejected";
+      request.adminComment = adminComment || "Request rejected";
+      request.processedBy = req.user._id || req.user.id;
+      request.processedAt = new Date();
+      await request.save();
+
+      res.json({
+        message: "Password reset request rejected",
+        request
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Clear temporary password (after admin shares it)
+router.put(
+  "/password-reset-requests/:requestId/clear-temp-password",
+  authMiddleware,
+  allowRoles("admin"),
+  async (req, res) => {
+    try {
+      const request = await PasswordResetRequest.findById(req.params.requestId);
+      if (request) {
+        request.newPassword = null; // Clear plaintext password
+        await request.save();
+      }
+      res.json({ message: "Temporary password cleared" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Legacy endpoint - kept for backward compatibility but updated to use new model
 router.post(
   "/reset-password/:organizerId",
   authMiddleware,
@@ -190,24 +303,6 @@ router.post(
         message: "Password reset successfully",
         newPassword // Return for admin to share if email fails
       });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-);
-
-// Request password reset (organizer calls this)
-router.post(
-  "/request-password-reset",
-  authMiddleware,
-  allowRoles("organizer"),
-  async (req, res) => {
-    try {
-      const organizer = await User.findById(req.user._id || req.user.id);
-      organizer.passwordResetRequested = true;
-      await organizer.save();
-
-      res.json({ message: "Password reset request submitted. Admin will process your request." });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

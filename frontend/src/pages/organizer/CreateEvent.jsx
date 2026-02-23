@@ -19,6 +19,27 @@ function CreateEvent() {
     venue: ""
   });
   const [tagInput, setTagInput] = useState("");
+  
+  // Custom form builder state
+  const [customForm, setCustomForm] = useState([]);
+  const [newField, setNewField] = useState({
+    fieldName: "",
+    fieldType: "text",
+    required: false,
+    options: ""
+  });
+  
+  // Merchandise configuration state
+  const [merchandiseDetails, setMerchandiseDetails] = useState({
+    itemName: "",
+    variants: [],
+    purchaseLimitPerParticipant: 1
+  });
+  const [newVariant, setNewVariant] = useState({
+    size: "",
+    color: "",
+    stockQuantity: 0
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,12 +63,109 @@ function CreateEvent() {
     }));
   };
 
+  // Custom form builder functions
+  const addFormField = () => {
+    if (!newField.fieldName.trim()) {
+      alert("Field name is required");
+      return;
+    }
+    
+    // Validate dropdown has options
+    if (newField.fieldType === "dropdown" && !newField.options.trim()) {
+      alert("Dropdown fields require options (comma-separated)");
+      return;
+    }
+    
+    const field = {
+      fieldName: newField.fieldName.trim(),
+      fieldType: newField.fieldType,
+      required: newField.required,
+      order: customForm.length
+    };
+    
+    // Add options if dropdown
+    if (newField.fieldType === "dropdown" && newField.options.trim()) {
+      field.options = newField.options.split(",").map(opt => opt.trim()).filter(opt => opt);
+    }
+    
+    setCustomForm([...customForm, field]);
+    setNewField({ fieldName: "", fieldType: "text", required: false, options: "" });
+  };
+
+  const removeFormField = (index) => {
+    setCustomForm(customForm.filter((_, i) => i !== index));
+  };
+
+  const moveFieldUp = (index) => {
+    if (index === 0) return;
+    const newForm = [...customForm];
+    [newForm[index - 1], newForm[index]] = [newForm[index], newForm[index - 1]];
+    setCustomForm(newForm.map((field, i) => ({ ...field, order: i })));
+  };
+
+  const moveFieldDown = (index) => {
+    if (index === customForm.length - 1) return;
+    const newForm = [...customForm];
+    [newForm[index], newForm[index + 1]] = [newForm[index + 1], newForm[index]];
+    setCustomForm(newForm.map((field, i) => ({ ...field, order: i })));
+  };
+
+  // Merchandise functions
+  const addVariant = () => {
+    if (!newVariant.size.trim() || !newVariant.color.trim()) {
+      alert("Size and color are required");
+      return;
+    }
+    
+    const variant = {
+      size: newVariant.size.trim(),
+      color: newVariant.color.trim(),
+      stockQuantity: parseInt(newVariant.stockQuantity) || 0,
+      sold: 0
+    };
+    
+    setMerchandiseDetails(prev => ({
+      ...prev,
+      variants: [...prev.variants, variant]
+    }));
+    setNewVariant({ size: "", color: "", stockQuantity: 0 });
+  };
+
+  const removeVariant = (index) => {
+    setMerchandiseDetails(prev => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { data } = await API.post("/events/create", eventData);
+      const payload = { ...eventData };
+      
+      // Add custom form for normal events
+      if (eventData.eventType === "normal" && customForm.length > 0) {
+        payload.customForm = customForm;
+      }
+      
+      // Add merchandise details for merchandise events
+      if (eventData.eventType === "merchandise") {
+        if (!merchandiseDetails.itemName.trim()) {
+          alert("Item name is required for merchandise events");
+          setLoading(false);
+          return;
+        }
+        if (merchandiseDetails.variants.length === 0) {
+          alert("At least one variant is required for merchandise events");
+          setLoading(false);
+          return;
+        }
+        payload.merchandiseDetails = merchandiseDetails;
+      }
+      
+      const { data } = await API.post("/events/create", payload);
       alert("Event created successfully as draft!");
       navigate("/organizer");
     } catch (error) {
@@ -243,6 +361,251 @@ function CreateEvent() {
                 />
               </div>
             </div>
+
+            {/* Custom Form Builder - Only for Normal Events */}
+            {eventData.eventType === "normal" && (
+              <div className="card bg-base-200 border border-primary">
+                <div className="card-body">
+                  <h2 className="card-title text-primary">📝 Custom Registration Form Builder</h2>
+                  <p className="text-sm opacity-70 mb-4">Create custom fields for participant registration (optional)</p>
+                  
+                  {/* Add New Field */}
+                  <div className="space-y-3 p-4 bg-base-100 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Field Name</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Dietary Preference, Skill Level"
+                          className="input input-bordered input-sm"
+                          value={newField.fieldName}
+                          onChange={(e) => setNewField({...newField, fieldName: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Field Type</span>
+                        </label>
+                        <select
+                          className="select select-bordered select-sm"
+                          value={newField.fieldType}
+                          onChange={(e) => setNewField({...newField, fieldType: e.target.value})}
+                        >
+                          <option value="text">Text</option>
+                          <option value="email">Email</option>
+                          <option value="number">Number</option>
+                          <option value="textarea">Textarea</option>
+                          <option value="dropdown">Dropdown</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    {newField.fieldType === "dropdown" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Options (comma-separated) *</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Vegetarian, Non-Veg, Vegan"
+                          className="input input-bordered input-sm"
+                          value={newField.options}
+                          onChange={(e) => setNewField({...newField, options: e.target.value})}
+                        />
+                        <label className="label">
+                          <span className="label-text-alt text-warning">Required for dropdown fields</span>
+                        </label>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <label className="label cursor-pointer gap-2">
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-sm"
+                          checked={newField.required}
+                          onChange={(e) => setNewField({...newField, required: e.target.checked})}
+                        />
+                        <span className="label-text">Required field</span>
+                      </label>
+                      
+                      <button
+                        type="button"
+                        onClick={addFormField}
+                        className="btn btn-primary btn-sm"
+                      >
+                        + Add Field
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Display Added Fields */}
+                  {customForm.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h3 className="font-semibold">Form Preview ({customForm.length} fields):</h3>
+                      {customForm.map((field, index) => (
+                        <div key={index} className="flex items-center gap-2 p-3 bg-base-100 rounded-lg border border-primary">
+                          <div className="flex-1">
+                            <div className="font-semibold text-lg">
+                              {index + 1}. {field.fieldName}
+                              {field.required && <span className="text-error ml-1">*</span>}
+                            </div>
+                            <div className="text-sm opacity-70">
+                              <span className="badge badge-sm badge-primary mr-2">{field.fieldType}</span>
+                              {field.options && field.options.length > 0 && (
+                                <span>Options: {field.options.join(", ")}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => moveFieldUp(index)}
+                              className="btn btn-xs btn-ghost"
+                              disabled={index === 0}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveFieldDown(index)}
+                              className="btn btn-xs btn-ghost"
+                              disabled={index === customForm.length - 1}
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeFormField(index)}
+                              className="btn btn-xs btn-error"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Merchandise Configuration - Only for Merchandise Events */}
+            {eventData.eventType === "merchandise" && (
+              <div className="card bg-base-200 border border-secondary">
+                <div className="card-body">
+                  <h2 className="card-title text-secondary">🛍️ Merchandise Configuration</h2>
+                  
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Item Name *</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Fest T-Shirt 2024"
+                      className="input input-bordered"
+                      value={merchandiseDetails.itemName}
+                      onChange={(e) => setMerchandiseDetails({...merchandiseDetails, itemName: e.target.value})}
+                      required={eventData.eventType === "merchandise"}
+                    />
+                  </div>
+                  
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Purchase Limit Per Participant</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="input input-bordered"
+                      value={merchandiseDetails.purchaseLimitPerParticipant}
+                      onChange={(e) => setMerchandiseDetails({...merchandiseDetails, purchaseLimitPerParticipant: parseInt(e.target.value) || 1})}
+                    />
+                  </div>
+                  
+                  {/* Add Variant */}
+                  <div className="space-y-3 p-4 bg-base-100 rounded-lg mt-4">
+                    <h3 className="font-semibold">Add Variant *</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Size</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., M"
+                          className="input input-bordered input-sm"
+                          value={newVariant.size}
+                          onChange={(e) => setNewVariant({...newVariant, size: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Color</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Black"
+                          className="input input-bordered input-sm"
+                          value={newVariant.color}
+                          onChange={(e) => setNewVariant({...newVariant, color: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Stock Quantity</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          className="input input-bordered input-sm"
+                          value={newVariant.stockQuantity}
+                          onChange={(e) => setNewVariant({...newVariant, stockQuantity: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={addVariant}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      + Add Variant
+                    </button>
+                  </div>
+                  
+                  {/* Display Added Variants */}
+                  {merchandiseDetails.variants.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h3 className="font-semibold">Variants ({merchandiseDetails.variants.length}):</h3>
+                      {merchandiseDetails.variants.map((variant, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-base-100 rounded-lg">
+                          <div>
+                            <span className="font-semibold">Size: {variant.size}</span>
+                            <span className="mx-2">|</span>
+                            <span className="font-semibold">Color: {variant.color}</span>
+                            <span className="mx-2">|</span>
+                            <span>Stock: {variant.stockQuantity}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeVariant(index)}
+                            className="btn btn-xs btn-error"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="alert alert-info">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">

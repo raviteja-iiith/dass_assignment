@@ -54,9 +54,17 @@ function OrganizerDashboard() {
           <h1 className="text-4xl font-bold mb-2">Organizer Dashboard</h1>
           <p className="text-lg opacity-70">Manage your events and participants</p>
         </div>
-        <Link to="/organizer/create-event" className="btn btn-primary btn-lg">
-          + Create New Event
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/organizer/password-reset" className="btn btn-ghost">
+            🔑 Password Reset
+          </Link>
+          <Link to="/organizer/merchandise-orders" className="btn btn-secondary">
+            📦 Merchandise Orders
+          </Link>
+          <Link to="/organizer/create-event" className="btn btn-primary btn-lg">
+            + Create New Event
+          </Link>
+        </div>
       </div>
 
       {/* Analytics Cards */}
@@ -118,13 +126,12 @@ function OrganizerDashboard() {
             {dashboard?.events && dashboard.events.length > 0 ? (
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {dashboard.events.map(event => (
-                  <Link 
+                  <div 
                     key={event._id}
-                    to={`/organizer/events/${event._id}/analytics`}
-                    className="card bg-base-200 hover:shadow-lg transition-all"
+                    className="card bg-base-200 shadow-lg"
                   >
                     <div className="card-body p-4">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-bold">{event.eventName}</h3>
                           <p className="text-sm opacity-70">{new Date(event.eventStartDate).toLocaleDateString()}</p>
@@ -133,13 +140,33 @@ function OrganizerDashboard() {
                           {event.status}
                         </div>
                       </div>
-                      <div className="flex gap-4 text-sm mt-2">
+                      <div className="flex gap-4 text-sm mb-3">
                         <span>👥 {event.totalRegistrations}</span>
                         <span>💰 ₹{event.totalRevenue}</span>
                         <span>✓ {event.totalAttendance}</span>
                       </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Link 
+                          to={`/events/${event._id}`}
+                          className="btn btn-sm btn-accent"
+                        >
+                          💬 Forum
+                        </Link>
+                        <Link 
+                          to={`/organizer/events/${event._id}/analytics`}
+                          className="btn btn-sm btn-primary"
+                        >
+                          📊 Analytics
+                        </Link>
+                        <Link 
+                          to={`/organizer/events/${event._id}/attendance`}
+                          className="btn btn-sm btn-info"
+                        >
+                          📱 Scanner
+                        </Link>
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             ) : (

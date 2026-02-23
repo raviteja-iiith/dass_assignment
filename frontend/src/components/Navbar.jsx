@@ -22,21 +22,27 @@ function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
             </svg>
           </label>
-          <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+          <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52">
             {user?.role === "participant" && (
               <>
                 <li><Link to="/participant" className={isActive("/participant") ? "active" : ""}>Dashboard</Link></li>
                 <li><Link to="/events" className={isActive("/events") ? "active" : ""}>Browse Events</Link></li>
+                <li><Link to="/organizers" className={isActive("/organizers") ? "active" : ""}>Clubs/Organizers</Link></li>
               </>
             )}
             {user?.role === "organizer" && (
               <>
                 <li><Link to="/organizer" className={isActive("/organizer") ? "active" : ""}>Dashboard</Link></li>
                 <li><Link to="/organizer/create-event" className={isActive("/organizer/create-event") ? "active" : ""}>Create Event</Link></li>
+                <li><Link to="/organizer/ongoing-events" className={isActive("/organizer/ongoing-events") ? "active" : ""}>Ongoing Events</Link></li>
               </>
             )}
             {user?.role === "admin" && (
-              <li><Link to="/admin" className={isActive("/admin") ? "active" : ""}>Admin Panel</Link></li>
+              <>
+                <li><Link to="/admin" className={isActive("/admin") ? "active" : ""}>Dashboard</Link></li>
+                <li><Link to="/admin" className={isActive("/admin") ? "active" : ""}>Manage Clubs/Organizers</Link></li>
+                <li><Link to="/admin/password-resets" className={isActive("/admin/password-resets") ? "active" : ""}>Password Reset Requests</Link></li>
+              </>
             )}
           </ul>
         </div>
@@ -59,6 +65,11 @@ function Navbar() {
                   Browse Events
                 </Link>
               </li>
+              <li>
+                <Link to="/organizers" className={`btn btn-ghost btn-sm ${isActive("/organizers") ? "btn-active" : ""}`}>
+                  Clubs/Organizers
+                </Link>
+              </li>
             </>
           )}
           {user?.role === "organizer" && (
@@ -73,14 +84,31 @@ function Navbar() {
                   Create Event
                 </Link>
               </li>
+              <li>
+                <Link to="/organizer/ongoing-events" className={`btn btn-ghost btn-sm ${isActive("/organizer/ongoing-events") ? "btn-active" : ""}`}>
+                  Ongoing Events
+                </Link>
+              </li>
             </>
           )}
           {user?.role === "admin" && (
-            <li>
-              <Link to="/admin" className={`btn btn-ghost btn-sm ${isActive("/admin") ? "btn-active" : ""}`}>
-                Admin Panel
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link to="/admin" className={`btn btn-ghost btn-sm ${isActive("/admin") ? "btn-active" : ""}`}>
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin" className={`btn btn-ghost btn-sm ${isActive("/admin") ? "btn-active" : ""}`}>
+                  Manage Clubs/Organizers
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin/password-resets" className={`btn btn-ghost btn-sm ${isActive("/admin/password-resets") ? "btn-active" : ""}`}>
+                  Password Reset Requests
+                </Link>
+              </li>
+            </>
           )}
         </ul>
       </div>

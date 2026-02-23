@@ -132,6 +132,12 @@ function ParticipantDashboard() {
         >
           Completed
         </a>
+        <a 
+          className={`tab tab-lg ${activeTab === "cancelled" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("cancelled")}
+        >
+          Cancelled/Rejected
+        </a>
       </div>
 
       {/* Content based on active tab */}
@@ -202,6 +208,23 @@ function ParticipantDashboard() {
             ) : (
               <div className="text-center p-12 border-2 border-dashed border-base-300 rounded-lg">
                 <p className="text-lg opacity-60">No completed events yet</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "cancelled" && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Cancelled/Rejected Registrations</h2>
+            {dashboard?.history?.cancelled?.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {dashboard.history.cancelled.map(reg => (
+                  <TicketCard key={reg._id} registration={reg} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-12 border-2 border-dashed border-base-300 rounded-lg">
+                <p className="text-lg opacity-60">No cancelled or rejected registrations</p>
               </div>
             )}
           </div>
