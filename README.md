@@ -11,7 +11,6 @@ A comprehensive full-stack event management platform built with React, Node.js, 
 - [Setup and Installation](#setup-and-installation)
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
-- [Testing Guide](#testing-guide)
 
 ---
 
@@ -441,26 +440,6 @@ Access to XMLHttpRequest blocked by CORS policy
 
 ---
 
-## Testing Guide
-
-For comprehensive testing instructions covering all features, see [TESTING_GUIDE.md](TESTING_GUIDE.md).
-
-**Quick Test Checklist:**
-- User authentication (Login/Register/Password Reset)
-- Event creation and management
-- Merchandise registration with payment proof upload
-- Payment approval workflow
-- QR code generation and scanning
-- Forum discussion with notifications
-- Anonymous feedback submission
-- Role-based access control
-
-**Test Accounts:**
-- **Admin:** admin@felicity.com / admin123
-- Create test organizer and participant accounts via admin dashboard
-
----
-
 ## Key Design Decisions Summary
 
 1. **JWT over Sessions:** Stateless authentication enables horizontal scaling and mobile app integration
@@ -492,10 +471,9 @@ This project is developed as part of an academic assignment for educational purp
 ## Support
 
 For issues or questions:
-1. Check [TESTING_GUIDE.md](TESTING_GUIDE.md) for feature testing instructions
-2. Review common issues in the Setup section
-3. Check browser console and backend logs for error messages
-4. Ensure all environment variables are correctly configured
+1. Review common issues in the Setup section
+2. Check browser console and backend logs for error messages
+3. Ensure all environment variables are correctly configured
 
 ---
 
