@@ -100,24 +100,6 @@ function Login() {
               </Link>
             </p>
           </div>
-
-          <div className="mt-4 p-4 bg-base-200 rounded-lg">
-            <p className="text-xs opacity-70 text-center mb-2 font-semibold">Demo Credentials:</p>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="flex justify-between">
-                <span className="opacity-60">Participant:</span>
-                <span className="font-mono">demo@iiit.ac.in / demo123</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="opacity-60">Organizer:</span>
-                <span className="font-mono">organizer@felicity.org / org123</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="opacity-60">Admin:</span>
-                <span className="font-mono">admin@felicity.org / admin123</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
