@@ -4,7 +4,7 @@ A comprehensive full-stack event management platform built with React, Node.js, 
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Technology Stack](#technology-stack)
 - [Advanced Features Implemented](#advanced-features-implemented)
@@ -15,7 +15,7 @@ A comprehensive full-stack event management platform built with React, Node.js, 
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Backend Dependencies
 
@@ -40,7 +40,7 @@ A comprehensive full-stack event management platform built with React, Node.js, 
 | **React** | ^19.2.0 | Component-based UI library with virtual DOM. Chosen for its declarative syntax, massive ecosystem, hooks for state management, and excellent developer tools. Enables reusable components like TicketCard, EventCard, and FeedbackModal. |
 | **React Router DOM** | ^7.13.0 | Client-side routing library. Essential for SPA navigation with protected routes for role-based access control (admin/organizer/participant). Provides programmatic navigation and URL parameter handling. |
 | **Vite** | 7.2.5 (Rolldown) | Next-generation frontend build tool. Chosen over Webpack/CRA for lightning-fast hot module replacement (HMR), native ES modules support, and 10-20x faster build times. Significantly improves development experience. |
-| **Tailwind CSS** | ^4.1.18 | Utility-first CSS framework. Selected over Bootstrap/Material-UI for: <br/>- Complete design flexibility without opinionated components<br/>- Tiny production bundle via PurgeCSS tree-shaking<br/>- Rapid prototyping with utility classes<br/>- Easy dark mode implementation |
+| **Tailwind CSS** | ^4.1.18 | Utility-first CSS framework. Selected over Bootstrap/Material-UI for complete design flexibility without opinionated components, tiny production bundle via PurgeCSS tree-shaking, rapid prototyping with utility classes, and easy dark mode implementation. |
 | **DaisyUI** | ^5.5.18 | Component library built on Tailwind CSS. Provides pre-styled semantic components (cards, modals, buttons) while maintaining Tailwind's utility-first philosophy. Reduces custom CSS by 80% while ensuring consistent design language. |
 | **Axios** | ^1.13.4 | HTTP client for API communication. Chosen for interceptor support (automatic JWT token attachment), request/response transformation, and better error handling than fetch API. Centralized API service configuration. |
 | **html5-qrcode** | ^2.3.8 | QR code scanning library using device camera. Critical for attendance tracking feature. Supports both camera scanning and image file uploads. Cross-platform compatibility (mobile + desktop) with minimal configuration. |
@@ -49,176 +49,166 @@ A comprehensive full-stack event management platform built with React, Node.js, 
 
 ---
 
-## 🚀 Advanced Features Implemented
+## Advanced Features Implemented
 
-### **Total Score: 30/30 Marks**
+As per the assignment requirements, features were selected from three tiers:
+- **Tier A**: Implement 2 features worth 8 marks each
+- **Tier B**: Implement 2 features worth 6 marks each  
+- **Tier C**: Implement 1 feature worth 2 marks
 
----
-
-### **Tier A Features (16 Marks)**
-
-#### **1. Merchandise Payment Workflow (8 Marks)**
-
-**Justification for Selection:**  
-Selected to provide a complete e-commerce experience within the event management system. Many college events sell merchandise (t-shirts, hoodies, badges), and integrating this eliminates the need for external payment platforms.
-
-**Design Choices:**
-- **Manual Payment Verification:** Opted for admin-approved payment proof uploads instead of automated payment gateways (Razorpay/Stripe) to avoid transaction fees and regulatory compliance complexity for college events.
-- **File Upload System:** Multer middleware handles payment proof images (PNG/JPG/PDF) with 5MB size limit and unique filename generation to prevent collisions.
-- **Three-State Workflow:** Pending → Approved → Registered ensures organizers verify payment authenticity before granting access.
-
-**Implementation Approach:**
-- **Backend:** 
-  - `POST /participant/register` accepts `registrationType: "merchandise"` with file upload
-  - `PATCH /organizer/registrations/:id/approve` verifies organizer ownership before approval
-  - File stored in `/uploads/payment-proofs/` with access control
-- **Frontend:**
-  - `MerchandiseOrders.jsx` displays paginated table with payment proof preview
-  - Inline approval/rejection with real-time status updates
-  - Visual badges (Pending=Warning, Approved=Success, Rejected=Error)
-
-**Technical Decisions:**
-- Chose disk storage over cloud (S3/Cloudinary) for simplicity and zero external dependencies
-- Implemented authorization check: `event.organizerId === req.user._id` to prevent cross-event approval
-- Used FormData API for multipart uploads with progress tracking
-
-**Files:** [MerchandiseOrders.jsx](frontend/src/pages/organizer/MerchandiseOrders.jsx), [participant.routes.js](backend/src/routes/participant.routes.js#L120-L247)
+**Total Implementation: 30 marks (16 + 12 + 2)**
 
 ---
 
-#### **2. QR Code Scanner for Attendance (8 Marks)**
+### Tier A Features (16 total)
 
-**Justification for Selection:**  
-Eliminates manual attendance sheets and reduces check-in time from 2-3 minutes to 5-10 seconds per participant. Critical for large events (100+ attendees) where entry bottlenecks create poor user experience.
+#### Feature 1: Merchandise Payment Workflow
 
-**Design Choices:**
-- **Encrypted QR Codes:** Each ticket contains a unique `ticketId` (MongoDB ObjectId) embedded in QR code generated server-side using `qrcode` library.
-- **Real-Time Camera Scanning:** Used `html5-qrcode` library instead of native WebRTC for built-in QR detection algorithms and cross-browser compatibility.
-- **Offline-First Architecture:** QR generation happens during registration (not at scan time) so attendees can save tickets offline as images.
+**Why I chose this feature:**  
+Many college events need to sell merchandise like t-shirts, hoodies, and badges. Instead of relying on external payment platforms that charge transaction fees and require complex regulatory compliance, I decided to build an integrated solution. This gives organizers complete control over the payment verification process while keeping everything within the platform.
 
-**Implementation Approach:**
-- **Backend:**
-  - QR code generated immediately after successful registration: `QRCode.toDataURL(ticketId)`
-  - `PATCH /organizer/events/:eventId/attendance/:ticketId` validates ticket ownership and marks attendance
-  - Prevents duplicate marking with `{ $set: { attended: true } }` idempotent update
-- **Frontend:**
-  - `AttendanceScanner.jsx` uses `Html5QrcodeScanner` with 250ms scan interval
-  - Dual-mode support: Camera scanning + file upload for damaged/printed QR codes
-  - Audio/visual feedback for successful scans with 2-second cooldown to prevent double-scans
-  - Real-time attendance counter and recent scan log (last 10 participants)
+**How I approached the design:**
+- Rather than integrating automated payment gateways like Razorpay or Stripe, I implemented a manual verification system where organizers approve payment proof uploads. This works better for college events where trust and community matter more than instant automation.
+- Used Multer middleware to handle file uploads with a 5MB size limit and unique filename generation to avoid collisions.
+- Created a three-state workflow: when someone registers for merchandise, their status starts as "Pending", moves to "Approved" after organizer verification, and finally becomes "Registered" when they can access the event.
 
-**Technical Decisions:**
-- Chose data URL embedding (`data:image/png;base64,...`) over external image hosting to ensure tickets work offline
-- Implemented ticketId validation regex to prevent SQL injection attempts via QR code manipulation
-- Added rate limiting (1 scan per 2 seconds) to prevent accidental duplicate marking
+**Implementation details:**
+- Backend handles POST requests to `/participant/register` accepting merchandise registrations with file uploads
+- Organizers can approve or reject via PATCH `/organizer/registrations/:id/approve` with authorization checks ensuring they can only manage their own events
+- Files are stored locally in `/uploads/payment-proofs/` which eliminates third-party dependencies
+- Frontend displays a paginated table in MerchandiseOrders.jsx with payment proof preview, inline approval buttons, and real-time status updates using color-coded badges
 
-**Files:** [AttendanceScanner.jsx](frontend/src/pages/organizer/AttendanceScanner.jsx), [organizer.routes.js](backend/src/routes/organizer.routes.js#L450-L520)
+**Technical decisions I made:**
+- Chose local disk storage over cloud solutions like S3 or Cloudinary to keep the setup simple and avoid external dependencies
+- Added strict authorization checks to prevent organizers from approving payments for events they don't own
+- Used FormData API on the frontend for multipart uploads with progress tracking so users know their files are uploading
+
+**Implementation files:** MerchandiseOrders.jsx, participant.routes.js
 
 ---
 
-### **Tier B Features (12 Marks)**
+#### Feature 2: QR Code Scanner for Attendance
 
-#### **3. Real-Time Discussion Forum (6 Marks)**
+**Why I chose this feature:**  
+Having attended several college events, I've seen how manual attendance takes forever. With 100+ participants, each taking 2-3 minutes to sign in creates massive bottlenecks at the entrance. A QR scanner can reduce this to 5-10 seconds per person, which dramatically improves the event experience.
 
-**Justification for Selection:**  
-Chosen to foster community engagement and reduce communication overhead on external platforms (WhatsApp/Discord). Event-specific forums enable Q&A, announcements, and networking directly within the platform.
+**How I approached the design:**
+- Generate unique QR codes server-side during registration using the participant's ticketId (MongoDB ObjectId). This ensures each ticket is cryptographically unique.
+- Went with html5-qrcode library instead of building custom WebRTC camera handling because it has built-in QR detection algorithms and works across different browsers without compatibility issues.
+- Made the system work offline by generating QR codes immediately after registration and embedding them as data URLs, so participants can save tickets as images even without internet.
 
-**Design Choices:**
-- **Role-Based Access Control:** Only registered participants and event organizers can access forums to prevent spam and maintain privacy.
-- **Moderation Features:** Organizers can delete inappropriate messages with `isDeleted` soft-delete flag (retains in DB for audit trails).
-- **Notification System:** Implemented custom notification system rather than WebSockets to avoid infrastructure complexity.
+**Implementation details:**
+- Backend generates QR codes using `QRCode.toDataURL(ticketId)` right after successful registration
+- Attendance marking happens via PATCH `/organizer/events/:eventId/attendance/:ticketId` which validates ticket ownership and uses idempotent updates to prevent duplicate marking
+- Frontend scanner component uses Html5QrcodeScanner with 250ms scan intervals for responsive detection
+- Built dual-mode support: live camera scanning for quick check-ins and file upload option for participants with damaged or printed QR codes
+- Added audio and visual feedback when scans succeed, with a 2-second cooldown to prevent accidental double-scans
+- Real-time attendance counter and recent scan log showing the last 10 participants
 
-**Implementation Approach:**
-- **Backend:**
-  - `POST /events/:eventId/forum` validates user registration before allowing message posting
-  - `GET /events/:eventId/forum` returns chronological messages with populated user details
-  - `DELETE /events/:eventId/forum/:messageId` soft-deletes with organizer authorization check
-- **Frontend:**
-  - `ForumDiscussion.jsx` implements tabbed interface (Discussion | Moderation)
-  - **Notification System:**
-    - LocalStorage tracks last forum visit: `forum_last_seen_${eventId} = timestamp`
-    - Polling every 5 seconds fetches new messages since last visit
-    - Visual indicators: 🆕 NEW badge (green pill, bouncing animation) on new messages
-    - Toast notification with message preview (auto-hide after 5 seconds)
-    - Unread count banner with "Mark All as Read" button
-  - Real-time character counter (1000 char limit) with validation
-  - Optimistic UI updates: Messages appear instantly before server confirmation
+**Technical decisions I made:**
+- Used data URL embedding instead of external image hosting so tickets work completely offline
+- Implemented regex validation on ticketId to prevent injection attempts through QR code manipulation
+- Added rate limiting of 1 scan per 2 seconds to avoid duplicate attendance marking from accidental double-scans
 
-**Technical Decisions:**
-- Chose polling over WebSockets to avoid additional server complexity (Socket.io dependency, connection management)
-- Used localStorage instead of Redux for notification state to persist across sessions
-- Implemented message deduplication by comparing timestamps to prevent duplicate notifications
-- Added `isNew` prop to MessageItem component for conditional CSS classes
-
-**Files:** [ForumDiscussion.jsx](frontend/src/components/ForumDiscussion.jsx), [forum.routes.js](backend/src/routes/forum.routes.js)
+**Implementation files:** AttendanceScanner.jsx, organizer.routes.js
 
 ---
 
-#### **4. Password Reset Workflow (6 Marks)**
+### Tier B Features (12 total)
 
-**Justification for Selection:**  
-Essential security feature for production systems. Eliminates admin dependency for password recovery and follows industry security standards for credential reset mechanisms.
+#### Feature 3: Real-Time Discussion Forum
 
-**Design Choices:**
-- **Email-Based Verification:** Chose email OTP over SMS to avoid telecom API costs and international compatibility issues.
-- **Time-Limited Tokens:** 15-minute expiry window balances security (prevents token reuse) with usability (sufficient time to check email).
-- **Single-Use Tokens:** Tokens invalidated after successful reset to prevent replay attacks.
+**Why I chose this feature:**  
+Event communication usually happens on WhatsApp groups or Discord servers, which fragments the conversation and makes it hard to keep track of important announcements. By building an event-specific forum directly into the platform, participants can ask questions, organizers can make announcements, and everything stays in one place.
 
-**Implementation Approach:**
-- **Backend:**
-  - `POST /auth/request-password-reset` generates 6-digit numeric OTP and stores in `PasswordResetRequest` collection with expiry timestamp
-  - Nodemailer sends HTML email with OTP and 15-minute countdown
-  - `POST /auth/reset-password` validates OTP, checks expiry, and updates password with bcrypt hashing
-  - Admin dashboard: `GET /admin/password-reset-history` provides audit trail with filters
-- **Frontend:**
-  - Two-step form: Email submission → OTP verification + new password
-  - Client-side validation: Password strength meter, confirmation matching
-  - Admin features: Role-based filtering, date range selection, status tracking
-  - Organizer view: Personal reset history with timestamps
+**How I approached the design:**
+- Implemented role-based access control so only registered participants and event organizers can access forums. This prevents spam and keeps discussions relevant.
+- Added moderation features where organizers can delete inappropriate messages. I used soft-delete flags (`isDeleted`) instead of hard deletes to maintain audit trails if needed.
+- Built a custom notification system using localStorage and polling instead of WebSockets. While WebSockets would be more "real-time", they add significant infrastructure complexity with Socket.io dependencies and connection management. For a college event platform, polling every 5 seconds provides good enough responsiveness.
 
-**Technical Decisions:**
-- Stored hashed passwords with bcrypt salt rounds = 10 (OWASP recommendation)
-- Used MongoDB TTL index on `expiresAt` field for automatic token cleanup
-- Implemented rate limiting: 3 requests per hour per email to prevent brute force attacks
-- Chose 6-digit OTP over UUID tokens for better mobile email client compatibility
+**Implementation details:**
+- Backend validates user registration before allowing message posting via POST `/events/:eventId/forum`
+- GET endpoint returns chronological messages with populated user details for display
+- Organizers can soft-delete messages via DELETE `/events/:eventId/forum/:messageId` with authorization checks
+- Frontend implements a tabbed interface with separate Discussion and Moderation views
+- **Notification system works like this:**
+  - localStorage tracks the last visit timestamp using `forum_last_seen_${eventId}`
+  - Polling every 5 seconds fetches messages posted since last visit
+  - New messages get a bouncing green "NEW" badge for visual prominence
+  - Toast notifications appear with message previews and auto-hide after 5 seconds
+  - Unread count banner at top with a "Mark All as Read" button
+- Character counter shows remaining space out of 1000 character limit with live validation
+- Messages appear immediately with optimistic UI updates before server confirmation
 
-**Files:** [PasswordResetManagement.jsx](frontend/src/pages/admin/PasswordResetManagement.jsx), [auth.js](backend/src/routes/auth.js#L150-L280)
+**Technical decisions I made:**
+- Chose polling over WebSockets to avoid additional infrastructure complexity while still providing responsive updates
+- Used localStorage instead of Redux for notification state because it persists across browser sessions automatically
+- Implemented message deduplication by comparing timestamps to prevent showing duplicate notifications when polling
+- Added `isNew` prop to MessageItem component for conditional styling of new messages
+
+**Implementation files:** ForumDiscussion.jsx, forum.routes.js
 
 ---
 
-### **Additional Features (2 Marks)**
+#### Feature 4: Password Reset Workflow
 
-#### **5. Anonymous Feedback System (2 Marks)**
+**Why I chose this feature:**  
+In any production system, users forget passwords. Without a self-service reset mechanism, they have to contact admins, which creates unnecessary support burden. A proper password reset workflow following industry security standards is essential for user autonomy.
 
-**Justification for Selection:**  
-Critical for continuous improvement and honest feedback. Anonymity encourages participants to provide candid reviews without fear of retaliation.
+**How I approached the design:**
+- Email-based verification using OTPs instead of SMS because email is free, works internationally, and doesn't require telecom API integration
+- Time-limited tokens with 15-minute expiry windows that balance security (prevents token reuse) with usability (enough time to check email and complete the process)
+- Single-use tokens that get invalidated immediately after successful reset to prevent replay attacks
 
-**Design Choices:**
-- **Post-Event Only:** Feedback enabled only for `registrationStatus: "registered"` participants to ensure meaningful reviews.
-- **Star Rating + Comments:** Combined quantitative (1-5 stars) and qualitative (text) feedback for richer insights.
-- **Anonymity Guarantee:** ParticipantId field excluded from organizer API responses via `.select("-participantId -__v")`.
+**Implementation details:**
+- POST `/auth/request-password-reset` generates a random 6-digit numeric OTP and stores it in the PasswordResetRequest collection with an expiry timestamp
+- Nodemailer sends an HTML email with the OTP and a countdown timer showing the 15-minute window
+- POST `/auth/reset-password` validates the OTP, checks if it's still within the expiry window, and updates the password using bcrypt hashing
+- Admin dashboard at `/admin/password-reset-history` provides a complete audit trail with role-based filtering
+- Frontend implements a two-step form: first collect email, then show OTP input field with new password confirmation
+- Client-side validation includes password strength indicators and confirmation matching before submission
+- Admin interface includes role-based filters, date range selection, and status tracking for all reset requests
+- Organizers can view their personal reset history with timestamps
 
-**Implementation Approach:**
-- **Backend:**
-  - `POST /events/:eventId/feedback` validates rating range and comment length
-  - Unique compound index `{eventId, participantId}` prevents duplicate submissions
-  - `GET /events/:eventId/feedback/stats` aggregates: total count, average rating, rating distribution
-  - Filter support: `?rating=5` for filtering by star rating
-- **Frontend:**
-  - `FeedbackModal.jsx` with interactive star rating (hover effects, real-time selection)
-  - Character counter (0/1000) with live validation
-  - `EventFeedback.jsx` displays:
-    - Average rating card (large number + star visualization)
-    - Rating distribution graph (horizontal bars with percentages)
-    - Filter buttons (All | 5★ | 4★ | 3★ | 2★ | 1★)
-    - Anonymous feedback cards (no author names, timestamps only)
+**Technical decisions I made:**
+- Stored passwords with bcrypt using 10 salt rounds following OWASP security recommendations
+- Used MongoDB TTL indexes on the `expiresAt` field so expired tokens get automatically cleaned up without manual intervention
+- Implemented rate limiting of 3 requests per hour per email address to prevent brute force attacks
+- Chose 6-digit numeric OTPs over UUID tokens because they're easier to read and type on mobile email clients
 
-**Technical Decisions:**
-- Used MongoDB aggregation pipeline for efficient average calculation vs. client-side computation
-- Implemented rating distribution as object `{1: count, 2: count, ...}` for O(1) lookup
-- Chose modal pattern over separate page for better UX (feedback submission without navigation)
+**Implementation files:** PasswordResetManagement.jsx, auth.js
 
-**Files:** [FeedbackModal.jsx](frontend/src/components/FeedbackModal.jsx), [EventFeedback.jsx](frontend/src/pages/organizer/EventFeedback.jsx), [feedback.routes.js](backend/src/routes/feedback.routes.js)
+---
+
+### Tier C Feature (2 total)
+
+#### Feature 5: Anonymous Feedback System
+
+**Why I chose this feature:**  
+Honest feedback is crucial for improving events, but people often hesitate to provide candid reviews if they think organizers will know who said what. Anonymity removes that fear and encourages more truthful responses that can actually help make future events better.
+
+**How I approached the design:**
+- Restricted feedback to participants with status "registered" to ensure only people who actually attended can leave reviews
+- Combined quantitative ratings (1-5 stars) with qualitative comments to get both measurable metrics and detailed insights
+- Guaranteed anonymity by explicitly excluding the participantId field from all organizer API responses using `.select("-participantId -__v")`
+
+**Implementation details:**
+- POST `/events/:eventId/feedback` validates that ratings are between 1-5 and comments are within length limits
+- Unique compound index on `{eventId, participantId}` prevents duplicate submissions - each participant can only submit one feedback per event
+- GET `/events/:eventId/feedback/stats` uses MongoDB aggregation to calculate total feedback count, average rating, and distribution across 1-5 stars
+- Filter support via `?rating=5` query parameter lets organizers view specific star ratings
+- Frontend feedback modal has interactive star rating with hover effects and real-time visual selection
+- Character counter shows current position out of 1000 character maximum with live updates
+- EventFeedback.jsx displays aggregated stats with a large average rating card, star visualization, and horizontal bar graph showing rating distribution
+- Filter buttons for All, 5-star, 4-star, 3-star, 2-star, and 1-star feedback
+- Individual feedback cards show only timestamps and comments without any author identification
+
+**Technical decisions I made:**
+- Used MongoDB aggregation pipeline for calculating averages instead of fetching all records and computing client-side, which is much more efficient
+- Stored rating distribution as an object like `{1: count, 2: count, ...}` for O(1) lookup performance
+- Chose modal pattern over a separate page for feedback submission because it provides better user experience without navigation disruption
+
+**Implementation files:** FeedbackModal.jsx, EventFeedback.jsx, feedback.routes.js
 
 ---
 
